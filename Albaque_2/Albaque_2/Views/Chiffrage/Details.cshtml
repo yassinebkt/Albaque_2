@@ -1,0 +1,233 @@
+﻿@model Albaque_2.ViewModels.ChiffrageViewModel
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Chiffrage</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Chiffrage.nom)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Chiffrage.nom)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Chiffrage.version)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Chiffrage.version)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Chiffrage.Date_Creation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Chiffrage.Date_Creation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Chiffrage.projet.client.nom)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Chiffrage.projet.client.nom)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Chiffrage.ProjetId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Chiffrage.projet.Nom)
+            @*Html.DisplayFor(model => model.Chiffrage.ProjetId)*@
+        </dd>
+
+    </dl>
+</div>
+<br />
+<h4>Liste des taches</h4>
+<hr />   
+
+
+<table class="table table-striped table-bordered" id="Chifftaches">
+    <thead>
+        <tr>
+            <th>
+                Order
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.tache.nom)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.tache.description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.tache.CategorieId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.tache.ComplexiteId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.tache.TechnologieId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.tache.charge)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @{Model.TotalCharge = 0;}
+        @foreach (var item in Model.ChiffrageTaches)
+        {
+            foreach (var item2 in Model.taches)
+            {
+                if (item2.Id == item.TacheId)
+                {
+                    Model.TotalCharge += item2.charge;
+            
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem2 => item.ordre)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem2 => item2.nom)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item2.description)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item2.categorie.nom)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item2.complexite.nom)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item2.technologie.nom)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item2.charge)
+                        </td>
+                        <td>
+                            <button data-client-id="@item.Id" class="btn-link js-details">
+                                <span class="glyphicon glyphicon-search" title="Détail"></span>
+                            </button>
+
+                            <button data-client-id="@item.Id" class="btn-link js-edit">
+                                <span class="glyphicon glyphicon-pencil" title="Editer"></span>
+                            </button> 
+                            <button data-client-id="@item.Id" class="btn-link js-delete">
+                                <span class="glyphicon glyphicon-remove" title="Supprimer"></span>
+                            </button>
+                        </td>
+                        @*<td>
+                            @Html.ActionLink("Delete", "DeleteChiffTache", new { id = item.Id })
+                        </td>*@
+                    </tr>
+                }
+
+            }
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="7" style="text-align:right">Total:</th>
+            <th></th>
+        </tr>
+    </tfoot>   
+</table>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Chiffrage.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var table = $('#Chifftaches').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "bInfo": false,
+            "bLengthChange": false,
+            "aoColumnDefs": [
+                { 'bSortable': false, "width": "11%", 'aTargets': [7] }
+            ],
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api(), data;
+
+                // Remove the formatting to get integer data for summation
+                var intVal = function (i) {
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '') * 1 :
+                        typeof i === 'number' ?
+                        i : 0;
+                };
+
+                // Total over all pages
+                total = api
+                    .column(6)
+                    .data()
+                    .reduce(function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0);
+
+                // Total over this page
+                pageTotal = api
+                    .column(6, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0);
+
+                // Update footer
+                $(api.column(6).footer()).html(
+                    pageTotal + ' ( ' + total + ' total)'
+                );
+            }
+            
+        });
+
+        $("#Chifftaches").on("click", ".js-delete", function () {
+            var button = $(this);
+            if (confirm("Are you sure ?")) {
+                $.ajax({
+                    type: "post",
+                    url: "/Chiffrage/DeleteChiffTache/" + button.attr("data-client-id"),
+                    //data: {id : button.attr("data-client-id") },
+                    ajaxasync: true,
+                    success: function () {
+                        table.row(button.parents('tr')).remove().draw();
+
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $("#Chifftaches").on("click", ".js-details", function () {
+            var button = $(this);
+
+            document.location = "/Chiffrage/Index";
+            @*'@Url.Action("Details", "Chiffrage", new { id =  })';*@
+
+            });
+    });
+</script>
+
+<script>
+    
+</script>

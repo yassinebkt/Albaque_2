@@ -1,0 +1,124 @@
+﻿@model IEnumerable<Albaque_2.Models.Chiffrage>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Mes Chiffrages de @System.Web.HttpContext.Current.User.Identity.Name</h2>
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table table-striped table-bordered" id="chiffrages">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.nom)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.version)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date_Creation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.projet.client.nom)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.projet.Nom)
+            </th>
+
+            <th id="test" ></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.nom)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.version)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date_Creation)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.projet.client.nom)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.projet.Nom)
+                </td>
+
+                <td>
+                    @*<a href='@Url.Action("Details", "Chiffrage", new { id = item.Id })' style="text-decoration: none;">
+                        <span class="glyphicon glyphicon-search" title="Détail"></span>
+                    </a> |*@
+
+                    @*<a href='@Url.Action("Edit", "Chiffrage", new { id = item.Id })' style="text-decoration: none;">
+                        <span class="glyphicon glyphicon-pencil" title="Editer"></span>
+                    </a> |*@
+                    <button data-client-id="@item.Id" class="btn-link js-details">
+                        <span class="glyphicon glyphicon-search" title="Détail"></span>
+                    </button> 
+
+                    <button data-client-id="@item.Id" class="btn-link js-edit">
+                        <span class="glyphicon glyphicon-pencil" title="Editer"></span>
+                    </button> 
+
+                    <button data-client-id="@item.Id" class="btn-link js-delete">
+                        <span class="glyphicon glyphicon-remove" title="Supprimer"></span>
+                    </button> 
+
+                </td>
+            </tr>
+        }
+    </tbody>   
+
+</table>
+
+
+
+
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var table = $('#chiffrages').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "bInfo": false,
+            "bLengthChange": false,
+            "aoColumnDefs": [
+                { 'bSortable': false, "width": "11%", 'aTargets': [5] }
+            ],
+             "order": [[ 2, "desc" ]]
+
+
+        });
+        $("#chiffrages").on("click", ".js-delete", function () {
+            var button = $(this);
+            if (confirm("Are you sure ?")) {
+                $.ajax({
+                    type: "post",
+                    url: "/Chiffrage/Delete/" + button.attr("data-client-id"),
+                    ajaxasync: true,
+                    success: function () {
+                        //button.parents("tr").remove();
+                        table.row(button.parents('tr')).remove().draw();
+                    }
+                });
+            }
+        });
+        $("#chiffrages").on("click", ".js-details", function () {
+            var button = $(this);
+            
+            document.location = "/Chiffrage/Details/" + button.attr("data-client-id");
+           @*'@Url.Action("Details", "Chiffrage", new { id =  })';*@
+           
+           });
+
+
+    });
+</script>

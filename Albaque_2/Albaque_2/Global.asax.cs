@@ -17,5 +17,9 @@ namespace Albaque_2
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+        protected void Application_EndRequest()
+        {//here breakpoint
+            var err = this.Context.AllErrors;
+        }
     }
 }

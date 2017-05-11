@@ -1,0 +1,220 @@
+﻿@model Albaque_2.ViewModels.ChiffrageViewModel
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create</h2>
+@Html.AntiForgeryToken()
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "newChiffrage" })) 
+{
+    @*@Html.AntiForgeryToken()*@
+
+    <div class="form-horizontal">
+        <h4>Chiffrage</h4>
+        <hr />
+        @Html.ValidationSummary(true)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Chiffrage.ProjetId, new { @class = "control-label col-md-2" })
+            <div class="col-md-10" id="pr">
+                @Html.DropDownListFor(model => model.Chiffrage.ProjetId, new SelectList(Model.projets, "Id", "nom"), "Choix du porjet", new { @id = "projetChoix", @class = "control-label col-md-2" })
+                @Html.ValidationMessageFor(model => model.Chiffrage.ProjetId)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Chiffrage.nom, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Chiffrage.nom, new { @id = "nomChiffrage" })
+                @Html.ValidationMessageFor(model => model.Chiffrage.nom)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Chiffrage.version, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Chiffrage.version, new { @id = "versionChiffrage" })
+                @Html.ValidationMessageFor(model => model.Chiffrage.version)
+            </div>
+        </div>
+        <div class="form-group">
+            <label>taches</label>
+            <div class="tt-container">
+                <input id="tachet" name="tachet" required type="text" value="" class="form-control" />
+            </div>
+        </div>
+
+        @*<ul id="tacheslist" class="list-group"></ul>*@
+
+
+
+        <table class="table table-striped table-bordered" id="tacheslist">
+            <thead>
+                <tr>
+                    <th>
+                        Order
+                    </th>
+                    <th>
+                        Nom de la Tache
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                    <th>
+                        Categorie
+                    </th>
+                    <th>
+                        Complexite
+                    </th>
+                    <th>
+                        Technologie
+                    </th>
+                    <th>
+                        Charge
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                    @*<tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.nom)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.version)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Date_Creation)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.projet.client.nom)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.projet.Nom)
+                        </td>
+                    </tr>*@
+            </tbody>
+
+        </table>
+
+
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@*<script type="text/javascript">
+    $(document).ready(function () {
+        $('#tacheslist').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "bInfo": false,
+            "bLengthChange": false
+
+        });
+    });
+</script>*@
+<script type="text/javascript">
+    function gettoken() {
+        var token = '@Html.AntiForgeryToken()';
+        token = $(token).val();
+        return token;
+   }
+</script>
+
+@Scripts.Render("~/bundles/jqueryval")
+<script>
+    $(document).ready(function () {
+
+        var vm = {
+            //__RequestVerificationToken: gettoken(),
+            //tachesIds: []
+            tachesIds:''
+        };
+        
+
+        var taches = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('nom'),
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: "/Chiffrage/GetTache?query=%QUERY",
+                wildcard: '%QUERY'
+            }
+        });
+
+        $('#tachet').typeahead({
+            minLenth: 3,
+            highlight: true
+        }, {
+            name: 'taches',
+            display: 'nom',
+            source: taches
+        }).on("typeahead:select", function (e, tache) {
+            //$("#tacheslist").append("<tr> <td>" + tache.nom + "</td></tr>");
+            $("#tacheslist").append(
+                
+                "<tr>" + 
+                      "<td>" +  23                 + "</td>" +
+                      "<td>" +  tache.nom          + "</td>" +
+                      "<td>" +  tache.description  + "</td>" +
+                      "<td>" +  tache.categorie    + "</td>" +
+                      "<td>" +  tache.technologie  + "</td>" +
+                      "<td>" +  tache.complexite   + "</td>" +
+                      "<td>" +  tache.charge       + "</td>" +
+
+                 "</tr>"
+                
+                );
+            
+
+            $("#tachet").typeahead("val", "");
+            //vm.tachesIds.push(tache.Id);
+            vm.tachesIds += tache.Id + '-';
+            //console.log(vm.tachesIds);
+        });
+
+        $("#newChiffrage").submit(function (e) {
+            e.preventDefault();
+            vm.projetId = document.getElementById("projetChoix").value;
+            vm.nomChiffrage = document.getElementById("Chiffrage_nom").value;
+            vm.versionChiffrage = document.getElementById("Chiffrage_version").value;
+            $.ajax({
+                type: "post",
+                url: "/Chiffrage/Create/",
+                data: vm,
+                
+                ajaxasync: true,
+                success: function (data) {
+                    window.location.href = data;
+
+                }
+            });
+
+            //$.ajax({
+            //    type: "post",
+            //    url: "/Chiffrage/DeleteChiffTache/" + button.attr("data-client-id"),
+            //    //data: {id : button.attr("data-client-id") },
+            //    ajaxasync: true,
+            //    success: function () {
+            //        button.parents("tr").remove();
+
+            //    }
+            //});
+
+        });
+
+    });
+</script>

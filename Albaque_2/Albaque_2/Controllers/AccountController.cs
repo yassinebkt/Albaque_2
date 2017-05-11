@@ -9,7 +9,8 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
 using Albaque_2.Models;
-
+using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
 namespace Albaque_2.Controllers
 {
     [Authorize]
@@ -46,14 +47,19 @@ namespace Albaque_2.Controllers
             if (ModelState.IsValid)
             {
                 var user = await UserManager.FindAsync(model.UserName, model.Password);
-                if (user != null)
+                if (user != null && AuthenticateAD(model.UserName, model.Password))
                 {
                     await SignInAsync(user, model.RememberMe);
                     return RedirectToLocal(returnUrl);
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Invalid username or password.");
+                    if (AuthenticateAD(model.UserName, model.Password))
+                    {
+                        enregistrer(model.UserName, model.Password, model.RememberMe);
+                    }
+                    else
+                        ModelState.AddModelError("", "Invalid username or password.");
                 }
             }
 
@@ -61,6 +67,28 @@ namespace Albaque_2.Controllers
             return View(model);
         }
 
+        public async void enregistrer(string username, string password, bool rem)
+        {
+            var user = new ApplicationUser() { UserName = username };
+            var result = await UserManager.CreateAsync(user, password);
+            if (result.Succeeded)
+            {
+                await SignInAsync(user, rem);
+            }
+            else
+            {
+                AddErrors(result);
+            }
+        }
+
+        public bool AuthenticateAD(string username, string password)
+        {
+            //using (var context = new PrincipalContext(ContextType.Domain, "MYDOMAIN"))
+            using (var context = new PrincipalContext(ContextType.Domain))
+            {
+                return context.ValidateCredentials(username, password);
+            }
+        }
         //
         // GET: /Account/Register
         [AllowAnonymous]
@@ -289,8 +317,13 @@ namespace Albaque_2.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
+            Session.Abandon();
+            Session.Clear();
+            Session.RemoveAll();
+            System.Web.Security.FormsAuthentication.SignOut();
+            Response.Redirect("login", false);
             AuthenticationManager.SignOut();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("login", "Account");
         }
 
         //
@@ -372,7 +405,7 @@ namespace Albaque_2.Controllers
             }
             else
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Chiffrage");
             }
         }
 

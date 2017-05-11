@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Identity.EntityFramework;
+using System.Data.Entity;
 
 namespace Albaque_2.Models
 {
@@ -10,8 +11,18 @@ namespace Albaque_2.Models
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection")
+            : base(@"Persist Security Info=False;Integrated Security=true;Initial Catalog=Albaque_2;server=PC954")
         {
         }
+
+        public DbSet<Categorie> Categories { get; set; }
+        public DbSet<Complexite> Complexites { get; set; }
+        public DbSet<Technologie> Technologies { get; set; }
+        public DbSet<Client> Clients { get; set; }
+        public DbSet<Projet> Projets { get; set; }
+        public DbSet<Tache> Taches { get; set; }
+
+        public DbSet<Chiffrage> Chiffrages { get; set; }
+        public DbSet<Chiffrage_Tache> Chiffrages_Taches { get; set; }
     }
 }
